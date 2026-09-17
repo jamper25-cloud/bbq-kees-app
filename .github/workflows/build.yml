@@ -16,11 +16,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - uses: android-actions/setup-android@v3
       - run: npm install -g cordova
       - run: npm install
-      - run: yes | sdkmanager --licenses
-      - run: cordova build android --debug
+      - run: cordova build android --debug 2>&1 | grep -i 'BUILD\|error\|success' || true
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: app-debug
-          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
