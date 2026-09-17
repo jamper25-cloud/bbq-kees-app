@@ -1,8 +1,8 @@
-name: Build Android APK
+name: Build APK
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   build:
@@ -11,17 +11,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 18
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
-      - uses: android-actions/setup-android@v3
+          distribution: temurin
+          java-version: 17
       - run: npm install -g cordova
       - run: npm install
-      - run: cordova build android --debug 2>&1 | grep -i 'BUILD\|error\|success' || true
+      - run: cordova platform add android
+      - run: cordova build android --release
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: app-debug
+          name: apk
           path: "**/*.apk"
