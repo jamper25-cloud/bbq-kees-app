@@ -24,10 +24,8 @@ jobs:
         distribution: 'temurin'
     
     - name: Set up Android SDK
-      uses: android-actions/setup-android@v2
-      with:
-        api-level: 34
-        build-tools-version: '34.0.0'
+      uses: android-actions/setup-android@v3
+      
     
     - name: Install Cordova
       run: npm install -g cordova
