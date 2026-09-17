@@ -3,48 +3,24 @@ name: Build Android APK
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-    
-    - name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-    
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v3
-     - name: Accept Android SDK Licenses
-      run: yes | sdkmanager --licenses
-    
-    - name: Install Android Build Tools
-      run: |
-        sdkmanager "build-tools;34.0.0"
-        sdkmanager "platforms;android-34" 
-    
-    - name: Install Cordova
-      run: npm install -g cordova
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Build APK
-      run: cordova build android --debug
-    
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - run: npm install -g cordova
+      - run: npm install
+      - run: yes | sdkmanager --licenses
+      - run: cordova build android --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
