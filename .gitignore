@@ -1,0 +1,13 @@
+node_modules/
+platforms/
+plugins/
+*.apk
+*.keystore
+.DS_Store
+.env
+*.log
+build/
+dist/
+.gradle
+.idea
+*.iml
