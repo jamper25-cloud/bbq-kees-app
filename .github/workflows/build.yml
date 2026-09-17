@@ -18,7 +18,8 @@ jobs:
           java-version: 17
       - run: npm install -g cordova
       - run: npm install
-      - run: cordova platform add android
+      - run: cordova platform remove android
+      - run: cordova platform add android@13
       - run: cordova build android --debug
       - uses: actions/upload-artifact@v4
         with:
