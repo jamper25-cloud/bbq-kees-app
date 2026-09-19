@@ -566,37 +566,60 @@
             <!-- TAB 2: INFO -->
             <div id="info" class="tab-content">
                 <div class="card">
-                    <h3>ℹ️ INFORMACJE SYSTEMOWE</h3>
-                    <div class="card-row">
-                        <span class="card-label">Model kotła:</span>
-                        <span class="card-value" id="boilerModel">--</span>
+                    <h3>📋 WSZYSTKIE PARAMETRY BBQ KEES</h3>
+                    
+                    <h4 style="color: #00d4ff; margin-top: 20px; margin-bottom: 10px;">🔥 KOCIOŁ</h4>
+                    <div style="font-size: 12px;">
+                        <div class="card-row"><span class="card-label">Temp. zasilania</span><span class="card-value" id="v_curflowtemp">--°C</span></div>
+                        <div class="card-row" style="background: #0d2438;"><span class="card-label">🖊️ Temp. zadana CO</span><span class="card-value" id="v_selflowtemp">--°C</span></div>
+                        <div class="card-row"><span class="card-label">Temp. nagrzewu</span><span class="card-value" id="v_heatingtemp">--°C</span></div>
+                        <div class="card-row"><span class="card-label">Moc palnika</span><span class="card-value" id="v_curburnpow">--%</span></div>
+                        <div class="card-row" style="background: #0d2438;"><span class="card-label">🖊️ Moc max palnika</span><span class="card-value" id="v_burnmaxpower">--%</span></div>
+                        <div class="card-row"><span class="card-label">Starty palnika</span><span class="card-value" id="v_burnstarts">--</span></div>
+                        <div class="card-row"><span class="card-label">Czas pracy palnika</span><span class="card-value" id="v_burnworkmin">-- min</span></div>
+                        <div class="card-row"><span class="card-label">Gaz włączony</span><span class="card-value" id="v_burngas">--</span></div>
+                        <div class="card-row"><span class="card-label">Wentylator</span><span class="card-value" id="v_fanwork">--</span></div>
+                        <div class="card-row"><span class="card-label">Zapłon</span><span class="card-value" id="v_ignwork">--</span></div>
                     </div>
-                    <div class="card-row">
-                        <span class="card-label">Moc nominalna:</span>
-                        <span class="card-value" id="boilerPower">-- kW</span>
+
+                    <h4 style="color: #00d4ff; margin-top: 20px; margin-bottom: 10px;">💧 CWU (CIEPŁA WODA)</h4>
+                    <div style="font-size: 12px;">
+                        <div class="card-row"><span class="card-label">Temp. aktualna</span><span class="card-value" id="v_dhw_curtemp">--°C</span></div>
+                        <div class="card-row" style="background: #0d2438;"><span class="card-label">🖊️ Temp. zadana</span><span class="card-value" id="v_dhw_seltemp">--°C</span></div>
+                        <div class="card-row"><span class="card-label">CWU aktywna</span><span class="card-value" id="v_dhw_activated">--</span></div>
+                        <div class="card-row"><span class="card-label">Grzanie CWU</span><span class="card-value" id="v_dhw_charging">--</span></div>
+                        <div class="card-row"><span class="card-label">Zawór 3-drożny</span><span class="card-value" id="v_dhw_3wayvalve">--</span></div>
+                        <div class="card-row"><span class="card-label">Starty CWU</span><span class="card-value" id="v_dhw_starts">--</span></div>
                     </div>
-                    <div class="card-row">
-                        <span class="card-label">Firmware:</span>
-                        <span class="card-value" id="firmwareVersion">--</span>
+
+                    <h4 style="color: #00d4ff; margin-top: 20px; margin-bottom: 10px;">🚰 POMPY</h4>
+                    <div style="font-size: 12px;">
+                        <div class="card-row"><span class="card-label">Pompa grzania</span><span class="card-value" id="v_heatingpump">--</span></div>
+                        <div class="card-row"><span class="card-label">Modulacja pompy</span><span class="card-value" id="v_heatingpumpmod">--%</span></div>
+                        <div class="card-row" style="background: #0d2438;"><span class="card-label">🖊️ Modu max</span><span class="card-value" id="v_pumpmodmax">--%</span></div>
+                        <div class="card-row" style="background: #0d2438;"><span class="card-label">🖊️ Modu min</span><span class="card-value" id="v_pumpmodmin">--%</span></div>
                     </div>
-                    <div class="card-row">
-                        <span class="card-label">Device ID:</span>
-                        <span class="card-value" id="deviceId">--</span>
+
+                    <h4 style="color: #00d4ff; margin-top: 20px; margin-bottom: 10px;">📊 SENSORY</h4>
+                    <div style="font-size: 12px;">
+                        <div class="card-row"><span class="card-label">Prąd płomienia</span><span class="card-value" id="v_flamecurr">-- µA</span></div>
+                        <div class="card-row"><span class="card-label">Ciśnienie</span><span class="card-value" id="v_pressure">-- bar</span></div>
+                        <div class="card-row"><span class="card-label">Temperatura spalin</span><span class="card-value" id="v_exhausttemp">--°C</span></div>
                     </div>
-                    <div class="card-row">
-                        <span class="card-label">Uptime:</span>
-                        <span class="card-value" id="uptime">--</span>
+
+                    <h4 style="color: #00d4ff; margin-top: 20px; margin-bottom: 10px;">⚙️ SERWIS</h4>
+                    <div style="font-size: 12px;">
+                        <div class="card-row"><span class="card-label">Ostatni błąd</span><span class="card-value" id="v_lastcode">--</span></div>
+                        <div class="card-row"><span class="card-label">Kod serwisu</span><span class="card-value" id="v_servicecode">--</span></div>
+                        <div class="card-row" style="background: #0d2438;"><span class="card-label">🖊️ Konserwacja</span><span class="card-value" id="v_maintenance">--</span></div>
+                        <div class="card-row" style="background: #0d2438;"><span class="card-label">🖊️ Dni do konserwacji</span><span class="card-value" id="v_maintenancetime">-- dni</span></div>
                     </div>
-                </div>
-                <div class="card">
-                    <h3>🔧 STEROWNIK</h3>
-                    <div class="card-row">
-                        <span class="card-label">Typ regulatora:</span>
-                        <span class="card-value" id="controllerType">--</span>
-                    </div>
-                    <div class="card-row">
-                        <span class="card-label">Wersja:</span>
-                        <span class="card-value" id="controllerVersion">--</span>
+
+                    <h4 style="color: #00d4ff; margin-top: 20px; margin-bottom: 10px;">⚡ ENERGIA</h4>
+                    <div style="font-size: 12px;">
+                        <div class="card-row"><span class="card-label">Energia całkowita</span><span class="card-value" id="v_nrgtotal">-- kWh</span></div>
+                        <div class="card-row"><span class="card-label">Gaz spalony</span><span class="card-value" id="v_gasmeterheat">-- m³</span></div>
+                        <div class="card-row"><span class="card-label">Uptime systemu</span><span class="card-value" id="v_ubauptime">-- min</span></div>
                     </div>
                 </div>
             </div>
@@ -1213,6 +1236,48 @@
                     document.getElementById('pressure').textContent = (data.pressure || 0).toFixed(2) + ' bar';
                     document.getElementById('burnerPower').textContent = (data.curburnpow || 0) + '%';
                     document.getElementById('flameCurrent').textContent = (data.flamecurr || 0) + ' µA';
+                    
+                    // Update tab INFO - wszystkie parametry
+                    document.getElementById('v_curflowtemp').textContent = (data.curflowtemp || 0).toFixed(1) + '°C';
+                    document.getElementById('v_selflowtemp').textContent = (data.selflowtemp || 0).toFixed(1) + '°C';
+                    document.getElementById('v_heatingtemp').textContent = (data.heatingtemp || 0).toFixed(1) + '°C';
+                    document.getElementById('v_curburnpow').textContent = (data.curburnpow || 0) + '%';
+                    document.getElementById('v_burnmaxpower').textContent = (data.burnmaxpower || 0) + '%';
+                    document.getElementById('v_burnstarts').textContent = data.burnstarts || '--';
+                    document.getElementById('v_burnworkmin').textContent = (data.burnworkmin || 0) + ' min';
+                    document.getElementById('v_burngas').textContent = data.burngas || '--';
+                    document.getElementById('v_fanwork').textContent = data.fanwork || '--';
+                    document.getElementById('v_ignwork').textContent = data.ignwork || '--';
+                    
+                    // CWU
+                    document.getElementById('v_dhw_curtemp').textContent = (data['dhw.curtemp'] || 0).toFixed(1) + '°C';
+                    document.getElementById('v_dhw_seltemp').textContent = (data['dhw.seltemp'] || 0).toFixed(1) + '°C';
+                    document.getElementById('v_dhw_activated').textContent = data['dhw.activated'] || '--';
+                    document.getElementById('v_dhw_charging').textContent = data['dhw.charging'] || '--';
+                    document.getElementById('v_dhw_3wayvalve').textContent = data['dhw.3wayvalve'] || '--';
+                    document.getElementById('v_dhw_starts').textContent = data['dhw.starts'] || '--';
+                    
+                    // Pompy
+                    document.getElementById('v_heatingpump').textContent = data.heatingpump || '--';
+                    document.getElementById('v_heatingpumpmod').textContent = (data.heatingpumpmod || 0) + '%';
+                    document.getElementById('v_pumpmodmax').textContent = (data.pumpmodmax || 0) + '%';
+                    document.getElementById('v_pumpmodmin').textContent = (data.pumpmodmin || 0) + '%';
+                    
+                    // Sensory
+                    document.getElementById('v_flamecurr').textContent = (data.flamecurr || 0) + ' µA';
+                    document.getElementById('v_pressure').textContent = (data.pressure || 0).toFixed(2) + ' bar';
+                    document.getElementById('v_exhausttemp').textContent = (data.exhausttemp || 0).toFixed(1) + '°C';
+                    
+                    // Serwis
+                    document.getElementById('v_lastcode').textContent = data.lastcode || '--';
+                    document.getElementById('v_servicecode').textContent = data.servicecode || '--';
+                    document.getElementById('v_maintenance').textContent = data.maintenance || '--';
+                    document.getElementById('v_maintenancetime').textContent = (data.maintenancetime || 0) + ' dni';
+                    
+                    // Energia
+                    document.getElementById('v_nrgtotal').textContent = (data.nrgtotal || 0).toFixed(2) + ' kWh';
+                    document.getElementById('v_gasmeterheat').textContent = (data.gasmeterheat || 0) + ' m³';
+                    document.getElementById('v_ubauptime').textContent = (data.ubauptime || 0) + ' min';
                     
                     // Store history
                     appState.monitoring.tempHistory.push(data.temp_flow || 0);
