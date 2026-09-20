@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="cordova-plugin-native-http-bridge"
+        version="1.0.0">
+    <name>NativeHttpBridge</name>
+    <description>Natywny most HTTP (window.AndroidNative) identyczny jak w EMS-ESP Connect</description>
+    <license>MIT</license>
+
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="NativeHttpBridge">
+                <param name="android-package" value="pl.bbqkees.nativehttp.NativeHttpBridgePlugin" />
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+        <source-file src="src/android/NativeHttpBridgePlugin.java" target-dir="src/pl/bbqkees/nativehttp" />
+    </platform>
+</plugin>
