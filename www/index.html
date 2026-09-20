@@ -913,18 +913,50 @@
             return `${base()}/api/${p.replace(/^\/+/,"")}`; 
         }
 
-        // ============ HTTP przez wtyczkę natywną (bez CORS) z fallbackiem na fetch ============
-        function pluginHttpGet(url, timeout) {
+        // ============ MOST DO KODU JAVA (identyczny jak u kolegi) ============
+        const nativePending = new Map();
+        let nativeSeq = 0;
+
+        window.__nativeHttpResponse = function(id, status, body, error) {
+            const p = nativePending.get(id);
+            if (!p) return;
+            nativePending.delete(id);
+            clearTimeout(p.timer);
+
+            if (error) {
+                const e = new Error(error);
+                e.name = "NativeHttpError";
+                p.reject(e);
+                return;
+            }
+            p.resolve({ status: Number(status) || 0, body: body ?? "" });
+        };
+
+        function nativeRequest(method, url, body = "", headers = {}, timeout = 6500) {
             return new Promise((resolve, reject) => {
-                cordova.plugin.http.setDataSerializer('json');
-                cordova.plugin.http.get(
-                    url,
-                    {},
-                    { 'Accept': 'application/json' },
-                    (response) => resolve(response.data),
-                    (response) => reject(new Error(`HTTP ${response.status || 0}: ${response.error || 'błąd połączenia'}`))
-                );
-                cordova.plugin.http.setRequestTimeout(timeout / 1000);
+                if (!window.AndroidNative || typeof window.AndroidNative.request !== "function") {
+                    reject(new Error("Brak mostu AndroidNative"));
+                    return;
+                }
+                const id = `r${Date.now()}_${++nativeSeq}`;
+                const timer = setTimeout(() => {
+                    nativePending.delete(id);
+                    reject(Object.assign(new Error("Przekroczono czas żądania"), { name: "AbortError" }));
+                }, timeout + 1500);
+
+                nativePending.set(id, { resolve, reject, timer });
+
+                try {
+                    window.AndroidNative.request(
+                        id, method, url, body || "",
+                        JSON.stringify(headers || {}),
+                        Math.max(1000, Math.min(timeout, 30000))
+                    );
+                } catch (e) {
+                    clearTimeout(timer);
+                    nativePending.delete(id);
+                    reject(e);
+                }
             });
         }
 
@@ -932,25 +964,31 @@
             return requestChain = requestChain.then(async () => {
                 try {
                     logStartup(`📡 Fetch: ${url.split('/api/')[1] || 'system'}...`, 'info');
-                    let text;
+                    let status, bodyText;
 
-                    if (window.cordova && window.cordova.plugin && window.cordova.plugin.http) {
-                        text = await pluginHttpGet(url, timeout);
+                    if (window.AndroidNative && typeof window.AndroidNative.request === "function") {
+                        const r = await nativeRequest("GET", url, "", { "Accept": "application/json" }, timeout);
+                        status = r.status;
+                        bodyText = r.body || "";
                     } else {
                         const c = new AbortController();
                         const timer = setTimeout(() => c.abort(), timeout);
                         try {
                             const r = await fetch(url, { cache: "no-store", mode: "cors", signal: c.signal });
-                            if (r.status < 200 || r.status >= 300) throw new Error(`HTTP ${r.status}`);
-                            text = await r.text();
+                            status = r.status;
+                            bodyText = await r.text();
                         } finally {
                             clearTimeout(timer);
                         }
                     }
 
+                    if (status < 200 || status >= 300) {
+                        throw new Error(`HTTP ${status}`);
+                    }
+
                     logStartup(`✅ OK: ${url.split('/api/')[1] || 'system'}`, 'success');
                     await sleep(REQUEST_GAP_MS);
-                    return text ? (typeof text === 'string' ? JSON.parse(text) : text) : null;
+                    return bodyText ? JSON.parse(bodyText) : null;
                 } catch (e) {
                     logStartup(`❌ ${url.split('/api/')[1] || 'system'}: ${e.message}`, 'error');
                     throw e;
