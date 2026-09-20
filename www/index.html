@@ -912,82 +912,25 @@
             return `${base()}/api/${p.replace(/^\/+/,"")}`; 
         }
 
-        // ============ ANDROID NATIVE SUPPORT ============
-        async function nativeRequest(method, url, body = "", headers = {}, timeout = 6500) {
-            return new Promise((resolve, reject) => {
-                const timer = setTimeout(() => reject(new Error("Timeout")), timeout);
-                try {
-                    window.AndroidNative.request(method, url, body, headers, (response) => {
-                        clearTimeout(timer);
-                        resolve(response);
-                    }, (error) => {
-                        clearTimeout(timer);
-                        reject(error);
-                    });
-                } catch (e) {
-                    clearTimeout(timer);
-                    reject(e);
-                }
-            });
-        }
-
-        // ============ FETCH LOGIKA Z KOLEGI ============
-        let backoffUntil = 0;
-
+        // ============ FETCH LOGIKA - PROSTA JAK U KOLEGI ============
         async function getJson(url, timeout = 6500) {
             return requestChain = requestChain.then(async () => {
-                const now = Date.now();
-                if (backoffUntil > now) {
-                    const left = Math.ceil((backoffUntil - now) / 1000);
-                    logStartup(`⏳ Czekaj: bramka zajęta na ${left}s`, 'warn');
-                    throw new Error(`Backoff ${left}s`);
-                }
-
+                const c = new AbortController();
+                const timer = setTimeout(() => c.abort(), timeout);
                 try {
                     logStartup(`📡 Fetch: ${url.split('/api/')[1] || 'system'}...`, 'info');
-                    
-                    let status = 0;
-                    let bodyText = "";
-
-                    // 1️⃣ ANDROID NATIVE NAJPIERW (bez CORS!)
-                    if (window.AndroidNative && typeof window.AndroidNative.request === "function") {
-                        logStartup(`🤖 Android Native...`, 'info');
-                        const r = await nativeRequest("GET", url, "", {"Accept":"application/json"}, timeout);
-                        status = r.status;
-                        bodyText = r.body || "";
-                    } 
-                    // 2️⃣ FALLBACK NA FETCH
-                    else {
-                        logStartup(`🌐 Fetch (CORS)...`, 'info');
-                        const c = new AbortController();
-                        const timer = setTimeout(() => c.abort(), timeout);
-                        try {
-                            const r = await fetch(url, {
-                                cache: "no-store",
-                                mode: "cors",
-                                signal: c.signal
-                            });
-                            status = r.status;
-                            bodyText = await r.text();
-                        } finally {
-                            clearTimeout(timer);
-                        }
+                    const r = await fetch(url, { 
+                        cache: "no-store", 
+                        mode: "cors", 
+                        signal: c.signal 
+                    });
+                    if (r.status < 200 || r.status >= 300) {
+                        throw new Error(`HTTP ${r.status}`);
                     }
-
-                    // HTTP 429 - BACKOFF!
-                    if (status === 429) {
-                        backoffUntil = Date.now() + 15000;
-                        logStartup(`⚠️ HTTP 429 - bramka zajęta! Czekaj 15s...`, 'warn');
-                        throw new Error("HTTP 429 - backoff 15s");
-                    }
-
-                    if (status < 200 || status >= 300) {
-                        throw new Error(`HTTP ${status}`);
-                    }
-
+                    const text = await r.text();
                     logStartup(`✅ OK: ${url.split('/api/')[1] || 'system'}`, 'success');
                     await sleep(REQUEST_GAP_MS);
-                    return bodyText ? JSON.parse(bodyText) : null;
+                    return text ? JSON.parse(text) : null;
                 } catch (e) {
                     logStartup(`❌ ${url.split('/api/')[1] || 'system'}: ${e.message}`, 'error');
                     throw e;
