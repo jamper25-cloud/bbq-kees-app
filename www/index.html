@@ -476,6 +476,7 @@
     </style>
 </head>
 <body>
+    <script src="cordova.js"></script>
     <div class="container">
         <div class="header">
             <h1>🔥 BBQ KEES PRO - BUDERUS EDITION</h1>
@@ -912,25 +913,44 @@
             return `${base()}/api/${p.replace(/^\/+/,"")}`; 
         }
 
-        // ============ FETCH LOGIKA - PROSTA JAK U KOLEGI ============
+        // ============ HTTP przez wtyczkę natywną (bez CORS) z fallbackiem na fetch ============
+        function pluginHttpGet(url, timeout) {
+            return new Promise((resolve, reject) => {
+                cordova.plugin.http.setDataSerializer('json');
+                cordova.plugin.http.get(
+                    url,
+                    {},
+                    { 'Accept': 'application/json' },
+                    (response) => resolve(response.data),
+                    (response) => reject(new Error(`HTTP ${response.status || 0}: ${response.error || 'błąd połączenia'}`))
+                );
+                cordova.plugin.http.setRequestTimeout(timeout / 1000);
+            });
+        }
+
         async function getJson(url, timeout = 6500) {
             return requestChain = requestChain.then(async () => {
-                const c = new AbortController();
-                const timer = setTimeout(() => c.abort(), timeout);
                 try {
                     logStartup(`📡 Fetch: ${url.split('/api/')[1] || 'system'}...`, 'info');
-                    const r = await fetch(url, { 
-                        cache: "no-store", 
-                        mode: "cors", 
-                        signal: c.signal 
-                    });
-                    if (r.status < 200 || r.status >= 300) {
-                        throw new Error(`HTTP ${r.status}`);
+                    let text;
+
+                    if (window.cordova && window.cordova.plugin && window.cordova.plugin.http) {
+                        text = await pluginHttpGet(url, timeout);
+                    } else {
+                        const c = new AbortController();
+                        const timer = setTimeout(() => c.abort(), timeout);
+                        try {
+                            const r = await fetch(url, { cache: "no-store", mode: "cors", signal: c.signal });
+                            if (r.status < 200 || r.status >= 300) throw new Error(`HTTP ${r.status}`);
+                            text = await r.text();
+                        } finally {
+                            clearTimeout(timer);
+                        }
                     }
-                    const text = await r.text();
+
                     logStartup(`✅ OK: ${url.split('/api/')[1] || 'system'}`, 'success');
                     await sleep(REQUEST_GAP_MS);
-                    return text ? JSON.parse(text) : null;
+                    return text ? (typeof text === 'string' ? JSON.parse(text) : text) : null;
                 } catch (e) {
                     logStartup(`❌ ${url.split('/api/')[1] || 'system'}: ${e.message}`, 'error');
                     throw e;
@@ -1505,14 +1525,15 @@ Avg power: ${(appState.monitoring.powerHistory.reduce((a, b) => a + b) / appStat
         }
 
         // ============ INIT ============
-        window.onload = () => {
-            // Auto-connect w APK Android
-            if (window.AndroidNative && typeof window.AndroidNative.request === "function") {
-                setTimeout(connectDevice, 350);
-            } else {
-                testConnection();
-            }
-        };
+        function initApp() {
+            testConnection();
+        }
+
+        if (window.cordova) {
+            document.addEventListener('deviceready', initApp, false);
+        } else {
+            window.onload = initApp;
+        }
     </script>
 </body>
 </html>
