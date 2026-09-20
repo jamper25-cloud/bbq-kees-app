@@ -13,6 +13,10 @@
     <allow-intent href="geo:*" />
     <platform name="android">
         <allow-intent href="market:*" />
+        <icon src="www/img/icon.png" density="ldpi" />
+        <icon src="www/img/icon.png" density="mdpi" />
+        <icon src="www/img/icon.png" density="hdpi" />
+        <icon src="www/img/icon.png" density="xhdpi" />
     </platform>
     <preference name="loglevel" value="DEBUG" />
     <preference name="AndroidLaunchMode" value="singleTop" />
@@ -20,4 +24,8 @@
     <preference name="webviewbounce" value="false" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="android-useWebView2" value="true" />
+    <preference name="MixedContentMode" value="0" />
+    <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application" xmlns:android="http://schemas.android.com/apk/res/android">
+        <application android:usesCleartextTraffic="true" />
+    </edit-config>
 </widget>
