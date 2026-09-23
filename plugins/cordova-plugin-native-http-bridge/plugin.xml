@@ -7,6 +7,11 @@
     <license>MIT</license>
 
     <platform name="android">
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+        </config-file>
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="NativeHttpBridge">
                 <param name="android-package" value="pl.bbqkees.nativehttp.NativeHttpBridgePlugin" />
