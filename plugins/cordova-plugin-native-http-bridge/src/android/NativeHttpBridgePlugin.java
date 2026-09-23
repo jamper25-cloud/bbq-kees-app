@@ -1,5 +1,10 @@
 package pl.bbqkees.nativehttp;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -17,8 +22,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class NativeHttpBridgePlugin extends CordovaPlugin {
 
@@ -75,7 +83,12 @@ public class NativeHttpBridgePlugin extends CordovaPlugin {
             }
 
             URL url = uri.toURL();
-            conn = (HttpURLConnection) url.openConnection();
+            Network wifiNetwork = findWifiNetworkWithoutInternet();
+            if (wifiNetwork != null) {
+                conn = (HttpURLConnection) wifiNetwork.openConnection(url);
+            } else {
+                conn = (HttpURLConnection) url.openConnection();
+            }
             conn.setRequestMethod(upperMethod);
             conn.setConnectTimeout(clamp(timeoutMs, 1000, 30000));
             conn.setReadTimeout(clamp(timeoutMs, 1000, 30000));
@@ -142,6 +155,42 @@ public class NativeHttpBridgePlugin extends CordovaPlugin {
             } catch (Exception ignored) {
             }
         });
+    }
+
+    private Network findWifiNetworkWithoutInternet() {
+        try {
+            ConnectivityManager cm = (ConnectivityManager)
+                    cordova.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return null;
+
+            NetworkRequest request = new NetworkRequest.Builder()
+                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                    .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    .build();
+
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicReference<Network> result = new AtomicReference<>();
+
+            ConnectivityManager.NetworkCallback callback = new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(Network network) {
+                    result.set(network);
+                    latch.countDown();
+                }
+            };
+
+            cm.requestNetwork(request, callback);
+            latch.await(2500, TimeUnit.MILLISECONDS);
+
+            try {
+                cm.unregisterNetworkCallback(callback);
+            } catch (Exception ignored) {
+            }
+
+            return result.get();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static String readAll(InputStream input) throws Exception {
