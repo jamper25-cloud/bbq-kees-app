@@ -1092,23 +1092,25 @@
             
             while (Date.now() - startTime < CONFIG.FLAME_TIMEOUT) {
                 try {
-                    const response = await fetch(`${CONFIG.API_URL}/api/boiler`);
-                    const data = await response.json();
-                    const flameCurr = data.flamecurr || 0;
-                    
+                    // getJson() zamiast gołego fetch() — ta sama trasa (AndroidNative / kolejka),
+                    // co reszta appki, żeby uniknąć "Failed to fetch" w WebView.
+                    const data = await getJson(api('boiler'));
+                    const flameCurr = data?.flamecurr ?? data?.["flame current"] ?? 0;
+
                     document.getElementById('flameCurrent').textContent = `${flameCurr} µA`;
                     updateProgress(80 + (flameCurr / CONFIG.FLAME_THRESHOLD * 20));
-                    logStartup(`⚡ Prąd płomienia: ${flameCurr} µA`, 'warning');
-                    
+                    logStartup(`⚡ Prąd jonizacji: ${flameCurr} µA`, 'warning');
+
                     if (flameCurr > CONFIG.FLAME_THRESHOLD) {
                         detected = true;
                         logStartup('✅ PŁOMIEŃ ZAPALONY!', 'success');
                         break;
                     }
-                    
-                    await sleep(100);
+
+                    await sleep(200);
                 } catch (e) {
                     console.error('Błąd detekcji płomienia:', e);
+                    await sleep(200);
                 }
             }
             
@@ -1524,19 +1526,28 @@ Avg power: ${(appState.monitoring.powerHistory.reduce((a, b) => a + b) / appStat
         async function scanSystem() {
             logStartup('🔍 Skanowanie systemu...', 'warning');
             try {
-                const systemResp = await fetch(`${CONFIG.API_URL}/api/system`);
-                const system = await systemResp.json();
-                
-                const boilerResp = await fetch(`${CONFIG.API_URL}/api/boiler`);
-                const boiler = await boilerResp.json();
-                
+                // Używamy tego samego mechanizmu co reszta appki (getJson -> AndroidNative / fetch z kolejką),
+                // zamiast gołego fetch() które Android WebView blokuje dla http:// (stąd "Failed to fetch").
+                const system = await getJson(api('system'));
+                const boiler = await getJson(api('boiler'));
+
                 document.getElementById('emsInterface').textContent = '✅ EMS-ESP32 Online';
-                document.getElementById('scanIP').textContent = CONFIG.API_URL;
-                document.getElementById('scanBoilerModel').textContent = system.device_id || 'Nieznany model';
-                document.getElementById('scanBoilerPower').textContent = '28 kW (estymacja)';
-                document.getElementById('scanController').textContent = 'ACU/MH v1';
-                document.getElementById('sensorsList').innerHTML = '<div style="color: #00ff00;">✅ DS18B20 Temperatura zasilania<br/>✅ Czujnik ciśnienia<br/>✅ Czujnik płomienia</div>';
-                
+                document.getElementById('scanIP').textContent = base();
+                document.getElementById('scanBoilerModel').textContent = system?.device_id || boiler?.device_id || 'Nieznany model';
+                document.getElementById('scanBoilerPower').textContent = boiler?.nominal_Power
+                    ? `${boiler.nominal_Power} kW`
+                    : (boiler?.["nominal Power"] || '-- kW');
+                document.getElementById('scanController').textContent = system?.version || system?.firmware || '--';
+
+                const sensors = [];
+                if (boiler && ('curflowtemp' in boiler || 'current flow temperature' in boiler)) sensors.push('✅ Czujnik temperatury zasilania');
+                if (boiler && ('pressure' in boiler)) sensors.push('✅ Czujnik ciśnienia');
+                if (boiler && ('flamecurr' in boiler || 'flame current' in boiler)) sensors.push('✅ Czujnik jonizacji / płomienia');
+                if (boiler && ('exhausttemp' in boiler)) sensors.push('✅ Czujnik spalin');
+                document.getElementById('sensorsList').innerHTML = sensors.length
+                    ? `<div style="color: #00ff00;">${sensors.join('<br/>')}</div>`
+                    : '<div style="color: #ffaa00;">⚠️ Brak wykrytych czujników w odpowiedzi</div>';
+
                 logStartup('✅ Skanowanie ukończone!', 'success');
             } catch (e) {
                 logStartup(`❌ Błąd skanowania: ${e.message}`, 'error');
